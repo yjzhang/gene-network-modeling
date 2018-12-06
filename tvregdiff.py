@@ -132,7 +132,6 @@ import sys
 
 try:
     import numpy as np
-    import scipy as sp
     from scipy import sparse
     from scipy.sparse import linalg as splin
 except ImportError:
@@ -155,7 +154,7 @@ def chop(v):
 
 
 def TVRegDiff(data, itern, alph, u0=None, scale='small', ep=1e-6, dx=None,
-              plotflag=_has_matplotlib, diagflag=1):
+              plotflag=False, diagflag=0):
 
     # code starts here
     # Make sure we have a column vector
