@@ -103,4 +103,16 @@ if __name__ == '__main__':
     #derivs = basis_functions.calculate_derivatives(data, regularize=True, time_steps=1, alph=1e-1)
     #plt.plot(derivs)
     #plt.show()
+    
+    # Plotting 
+        
+    plt.figure(figsize=(20,10))
+    plt.plot(results['time'], results['[g1]'], color = 'green', label = 'g1 data')
+    plt.plot(results['time'], results['[g2]'], color = 'orange', label = 'g2 data')
+    plt.plot(results['time'], results['[g3]'], color = 'blue', label = 'g3 data')
+    plt.plot(results_2['time'], results_2['[g1]'], color = 'lightgreen', label = 'g1 fit')
+    plt.plot(results_2['time'], results_2['[g2]'], color = 'wheat', label = 'g2 fit')
+    plt.plot(results_2['time'], results_2['[g3]'], color = 'lightblue', label = 'g3 fit')
+    plt.legend()
+    plt.show()
 
