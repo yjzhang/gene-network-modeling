@@ -207,6 +207,16 @@ if __name__ == '__main__':
 
     #plt.bar(range(len(errors)), errors, tick_label=[str(x) for x in zip(alpha_vals, alph_vals)])
 
+    plt.figure(figsize=(20,10))
+    plt.plot(results['time'], results['[g1]'], color = 'green', label = 'g1 data')
+    plt.plot(results['time'], results['[g2]'], color = 'orange', label = 'g2 data')
+    plt.plot(results['time'], results['[g3]'], color = 'blue', label = 'g3 data')
+    plt.plot(results_2['time'], results_2['[g1]'], color = 'lightgreen', label = 'g1 fit')
+    plt.plot(results_2['time'], results_2['[g2]'], color = 'wheat', label = 'g2 fit')
+    plt.plot(results_2['time'], results_2['[g3]'], color = 'lightblue', label = 'g3 fit')
+    plt.legend()
+    plt.show()
+
     import pickle
     with open('model_1_results.pkl', 'wb') as f:
         pickle.dump(rmse_vals, f)
@@ -262,6 +272,7 @@ if __name__ == '__main__':
     plt.title('P1')
     plt.plot(data_protein['time'], data_protein['P1'], label='data')
     plt.plot(data_protein['time'], results_2['[P1]'], label='model')
+
     plt.show()
 
     plt.title('P6')
