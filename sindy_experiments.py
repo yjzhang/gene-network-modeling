@@ -68,20 +68,35 @@ def run_sindy(data, param_names, d=1, time_steps=1, alph=1e-1, plot=False,
     return antimony_eqs
 
 def run_implicit_sindy(data, param_names, d=1, time_steps=1, alph=1e-1, plot=False,
-        alpha=1e-2, fit_intercept=True):
-    # alph and alpha are two separate parameters for regularization in two different contexts
+        lam=0.01, fit_intercept=True):
     # alph regularizes the derivative calculation
-    # alpha regularizes the Lasso
+    # lam_range indicates the range of lambda values - for ADM.
     """
     Runs implicit sindy to generate a system of ODEs that represent the given data...
     in this implementation, we use polynomial basis functions
     """
     # TODO
-    basis_vectors, all_combs = basis_functions.generate_basis_functions(data, d=d)
-    param_names = np.array(param_names)
-    all_var_combs = [param_names[list(c)].tolist() for c in all_combs]
+    # TODO: instead of generating these basis functions, try to generate rational basis functions.
+    # TODO: append a vector of all 1s to data
+    from adm import adm, gs
     derivs = basis_functions.calculate_derivatives(data, regularize=True,
             time_steps=time_steps, alph=alph)
+    derivs = derivs[1:,:]
+    num_vars = data.shape[1]
+    param_names = np.array(param_names)
+    model_params = []
+    for var in range(num_vars):
+        basis_vectors, all_combs = basis_functions.generate_implicit_basis_functions(data, derivs[:,var], d, constant=True)
+        all_var_combs = [param_names[list(c)].tolist() if c[0]!='c' else 0 for c in all_combs]
+        Q = gs(basis_vectors)
+        adm_result = adm(Q, lam=lam)
+        error = np.abs(np.dot(Q, adm_result)).sum()
+        print('var {0}: error={1}'.format(var, error))
+        params = np.dot(Q, adm_result)
+        model_params.append(params)
+
+    return model_params
+    ###################
     if plot:
         plt.title('derivs')
         plt.plot(derivs)
@@ -157,9 +172,11 @@ if __name__ == '__main__':
         for alph in [10, 1, 1e-1, 1e-2, 1e-3]:
             for iter in range(10):
                 data = np.column_stack([results['[A]'], results['[B]'], results['[C]']])
+                data_no_noise = data.copy()
                 data_deriv = data[1:,:] - data[:-1,:]
                 noise = np.random.randn(*data.shape)*noise_variance
                 data += noise
+                data_noise_deriv = data[1:,:] - data[:-1,:]
                 estimated_deriv = basis_functions.calculate_derivatives(data, regularize=True, alph=alph)
                 print('Total SNR:', np.mean(data)/np.std(data))
                 for i in range(data.shape[1]):
@@ -176,7 +193,7 @@ if __name__ == '__main__':
                 results_2 = model2.simulate(0, 50, 50)
                 data_2 = np.column_stack([results_2['[A]'], results_2['[B]'], results_2['[C]']])
 
-                error = np.sqrt(np.mean((data_2 - data)**2))
+                error = np.sqrt(np.mean((data_2 - data_no_noise)**2))
                 print('RMSE:', error)
                 key = str((alpha, alph))
                 if key not in rmse_vals:

@@ -35,6 +35,41 @@ def generate_basis_functions(X, d=3):
     output_vectors = np.column_stack(output_vectors)
     return output_vectors, all_combs
 
+def generate_implicit_basis_functions(X, dX, d=3, constant=False):
+    """
+    Args:
+        X (array): data matrix of shape (time_steps, num_vars)
+        dX (vector): derivative for the given variable
+        d (int): maximum degree of polynomial
+
+    Returns:
+        ([X, X^2,...,X^d, X'X, X'X^2,...], [combinations])
+    """
+    output_vectors = []
+    output_derivs = []
+    all_combs = []
+    if constant:
+        d1 = np.ones(X.shape[0])
+        output_vectors.append(d1)
+        all_combs.append(('c',))
+    for dim in range(1, d+1):
+        # Xd should be d-th degree polynomial basis functions on X
+        combinations = itertools.combinations_with_replacement(range(X.shape[1]), dim)
+        Xd = []
+        for c in combinations:
+            all_combs.append(c)
+            Xc = X[:,c]
+            Xc = Xc.prod(1)
+            Xd.append(Xc)
+            X_deriv = dX*Xc
+            output_derivs.append(X_deriv)
+        Xd = np.column_stack(Xd)
+        output_vectors.append(Xd)
+    output_vectors = np.column_stack(output_vectors + output_derivs)
+    all_combs = all_combs + all_combs
+    return output_vectors, all_combs
+
+
 def calculate_derivatives(X, regularize=False, time_steps=1.0, alph=10):
     """
     Args:
